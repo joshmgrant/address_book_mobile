@@ -15,3 +15,10 @@ androidApp:
   deviceName: Nexus
   app: https://github.com/sauce-examples/apps/blob/master/AddressBook.apk?raw=true
   appWaitActivity: com.address.book.MainActivity
+androidAppSauce:
+  platformName: Android
+  platformVersion: "7.1"
+  deviceName: Android GoogleAPI Emulator
+  appiumVersion: "1.7.2"
+  app: https://github.com/sauce-examples/apps/blob/master/AddressBook.apk?raw=true
+  appWaitActivity: com.address.book.MainActivity

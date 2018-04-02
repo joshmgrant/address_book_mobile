@@ -16,7 +16,7 @@ import java.net.URL;
 import java.util.Map;
 
 public class BaseTest {
-    AndroidDriver driver;
+    private ThreadLocal<AndroidDriver> threadLocalDriver = new ThreadLocal<AndroidDriver>();
 
     private static DesiredCapabilities createCapabilities(String value) throws FileNotFoundException {
         FileReader file = new FileReader("src/test/config/platforms.yml");
@@ -27,6 +27,10 @@ public class BaseTest {
         capabilities.setCapability("platformName", platform.get("platformName"));
         capabilities.setCapability("platformVersion", platform.get("platformVersion"));
         capabilities.setCapability("deviceName", platform.get("deviceName"));
+
+        if (platform.get("appiumVersion") != null) {
+            capabilities.setCapability("appiumVersion", platform.get("appiumVersion"));
+        }
 
         if (platform.get("browserName") == null) {
             capabilities.setCapability("app", platform.get("app"));
@@ -40,13 +44,15 @@ public class BaseTest {
 
     @BeforeMethod
     public void setup(Method method) throws MalformedURLException, FileNotFoundException {
+        System.setProperty("USE_SAUCE", "true");
+
         String url;
         DesiredCapabilities capabilities;
 
         String platformProperty = System.getProperty("PLATFORM");
 
         if (System.getProperty("USE_SAUCE") != null) {
-            String platform = (platformProperty != null) ? platformProperty : "androidChromeSauce";
+            String platform = (platformProperty != null) ? platformProperty : "androidAppSauce";
             capabilities = createCapabilities(platform);
 
             String USER = System.getenv("SAUCE_USERNAME");
@@ -65,11 +71,16 @@ public class BaseTest {
             url = "http://localhost:4723/wd/hub";
         }
 
-        driver = new AndroidDriver<>(new URL(url), capabilities);
+        AndroidDriver driver = new AndroidDriver<>(new URL(url), capabilities);
+        threadLocalDriver.set(driver);
+        System.out.println(driver.getSessionId());
     }
 
     @AfterMethod
     public void tearDown(ITestResult result) {
+        AndroidDriver driver = getDriver();
+        System.out.println("Entering Tear down with " + driver.getSessionId());
+
         String status = result.isSuccess() ? "passed" : "failed";
 
         if (System.getProperty("USE_SAUCE") == null) {
@@ -79,7 +90,12 @@ public class BaseTest {
             js.executeScript("sauce:job-result=" + status);
         }
 
+        System.out.println("Just Quit " + driver.getSessionId());
         driver.quit();
+    }
+
+    AndroidDriver getDriver() {
+        return threadLocalDriver.get();
     }
 
 }

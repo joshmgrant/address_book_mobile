@@ -1,5 +1,6 @@
 package test.tests;
 
+import io.appium.java_client.android.AndroidDriver;
 import test.data.UserData;
 import test.pages.*;
 
@@ -11,6 +12,8 @@ import static org.testng.Assert.assertTrue;
 public class SignInErrors extends BaseTest {
     @Test
     public void signInBlankPasswordUnsuccessful() {
+        AndroidDriver driver = getDriver();
+
         SignInPage signInPage = SignInPage.visit(driver);
         signInPage.signIn(UserData.blankPassword());
 
